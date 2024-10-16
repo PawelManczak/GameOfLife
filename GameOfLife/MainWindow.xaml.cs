@@ -27,7 +27,8 @@ namespace GameOfLife
 
         private Random random = new Random();
 
-        private GameStateManager gameStateManager = new GameStateManager(); // Inicjalizacja klasy do zarządzania stanem gry
+        private GameStateManager gameStateManager = new GameStateManager();
+        private ImageSaver imageSaver = new ImageSaver();
 
         public MainWindow()
         {
@@ -411,31 +412,7 @@ namespace GameOfLife
 
         private void SaveBoardAsImage()
         {
-            // Wybieramy miejsce do zapisu pliku za pomocą dialogu
-            SaveFileDialog saveFileDialog = new SaveFileDialog
-            {
-                Filter = "PNG Image (*.png)|*.png",
-                Title = "Save Board Image"
-            };
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                // Renderujemy planszę do bitmapy
-                RenderTargetBitmap renderBitmap = new RenderTargetBitmap((int)GameBoard.ActualWidth, (int)GameBoard.ActualHeight, 96d, 96d, PixelFormats.Pbgra32);
-                renderBitmap.Render(GameBoard);
-
-                // Konwertujemy bitmapę na format PNG
-                BitmapEncoder encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-
-                // Zapisujemy obraz do pliku
-                using (var fileStream = new System.IO.FileStream(saveFileDialog.FileName, System.IO.FileMode.Create))
-                {
-                    encoder.Save(fileStream);
-                }
-
-                MessageBox.Show("Board image saved successfully.", "Save Image", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            imageSaver.SaveAsImage(GameBoard);
         }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
