@@ -314,6 +314,15 @@ namespace GameOfLife
                 }
             }
         }
+        private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (GameBoardScaleTransform != null)
+            {
+                double zoom = ZoomSlider.Value;
+                GameBoardScaleTransform.ScaleX = zoom;
+                GameBoardScaleTransform.ScaleY = zoom;
+            }
+        }
 
         private void UpdateCellVisual(Border cellBorder, bool isAlive)
         {

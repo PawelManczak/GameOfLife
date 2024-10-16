@@ -5,21 +5,18 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- First row of controls -->
             <RowDefinition Height="Auto"/>
-            <!-- Second row of controls -->
             <RowDefinition Height="*"/>
-            <!-- Game board -->
         </Grid.RowDefinitions>
-        <!-- First row of controls -->
         <StackPanel Orientation="Horizontal" Margin="10" Grid.Row="0">
             <Button x:Name="StartStopButton" Content="Start" Width="75" Click="StartStopButton_Click"/>
             <Button x:Name="StepButton" Content="Step" Width="75" Margin="5,0,0,0" Click="StepButton_Click"/>
             <Button x:Name="ResetButton" Content="Reset" Width="75" Margin="5,0,0,0" Click="ResetButton_Click"/>
             <TextBlock Margin="10,0,0,0" Text="Speed:" VerticalAlignment="Center"/>
             <Slider x:Name="SpeedSlider" Minimum="100" Maximum="2000" Value="500" Width="100" Margin="5,0,0,0" IsDirectionReversed="True" ValueChanged="SpeedSlider_ValueChanged"/>
+            <TextBlock Margin="10,0,0,0" Text="Zoom:" VerticalAlignment="Center"/>
+            <Slider x:Name="ZoomSlider" Minimum="0.5" Maximum="2.0" Value="1.0" Width="100" Margin="5,0,0,0" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="ZoomSlider_ValueChanged"/>
         </StackPanel>
-        <!-- Second row of controls -->
         <StackPanel Orientation="Horizontal" Margin="10" Grid.Row="1">
             <TextBlock Text="Cell Shape:" VerticalAlignment="Center"/>
             <ComboBox x:Name="CellShapeComboBox" Width="80" Margin="5,0,0,0" SelectionChanged="CellShapeComboBox_SelectionChanged">
@@ -41,9 +38,13 @@
             <TextBlock Margin="10,0,0,0" Text="Died:" VerticalAlignment="Center"/>
             <TextBlock x:Name="DiedTextBlock" Text="0" Margin="5,0,0,0" VerticalAlignment="Center"/>
         </StackPanel>
-        <!-- Game board -->
         <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <UniformGrid x:Name="GameBoard" />
+            <Grid RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <ScaleTransform x:Name="GameBoardScaleTransform" ScaleX="1.0" ScaleY="1.0"/>
+                </Grid.RenderTransform>
+                <UniformGrid x:Name="GameBoard" />
+            </Grid>
         </ScrollViewer>
     </Grid>
 </Window>
