@@ -23,6 +23,8 @@ namespace GameOfLife
         private string cellShape = "Square";
         private Brush cellColor = Brushes.Black;
 
+        private Random random = new Random();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -139,6 +141,38 @@ namespace GameOfLife
             BoardWidth = 0;
             BoardHeight = 0;
             ShowBoardSizeWindow();
+        }
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isRunning)
+            {
+                timer.Stop();
+                isRunning = false;
+                StartStopButton.Content = "Start";
+                StepButton.IsEnabled = true;
+            }
+
+            for (int i = 0; i < BoardHeight; i++)
+            {
+                for (int j = 0; j < BoardWidth; j++)
+                {
+                    boardState[i, j] = 0;
+                }
+            }
+            UpdateUI();
+        }
+
+        private void RandomizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < BoardHeight; i++)
+            {
+                for (int j = 0; j < BoardWidth; j++)
+                {
+                    boardState[i, j] = random.Next(2);
+                }
+            }
+            UpdateUI();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -268,13 +302,37 @@ namespace GameOfLife
             }
         }
 
+        private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (GameBoardScaleTransform != null)
+            {
+                double newZoom = ZoomSlider.Value;
+
+                DoubleAnimation scaleXAnimation = new DoubleAnimation
+                {
+                    To = newZoom,
+                    Duration = TimeSpan.FromMilliseconds(300),
+                    EasingFunction = new QuadraticEase()
+                };
+
+                DoubleAnimation scaleYAnimation = new DoubleAnimation
+                {
+                    To = newZoom,
+                    Duration = TimeSpan.FromMilliseconds(300),
+                    EasingFunction = new QuadraticEase()
+                };
+
+                GameBoardScaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+                GameBoardScaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+            }
+        }
+
         private void UpdateCellVisual(Border cellBorder, bool isAlive)
         {
             cellBorder.Child = null;
-
+            Shape shape = cellShape == "Circle" ? new Ellipse() : (Shape)new Rectangle();
             if (isAlive)
             {
-                Shape shape = cellShape == "Circle" ? new Ellipse() : (Shape)new Rectangle();
                 shape.Fill = cellColor;
                 shape.Stretch = Stretch.Uniform;
                 cellBorder.Background = Brushes.White;
@@ -282,12 +340,11 @@ namespace GameOfLife
 
                 if (EnableAnimationsCheckBox.IsChecked == true)
                 {
-
                     DoubleAnimation fadeInAnimation = new DoubleAnimation
                     {
                         From = 0.0,
                         To = 1.0,
-                        Duration = TimeSpan.FromMilliseconds(1500),
+                        Duration = TimeSpan.FromMilliseconds(300),
                         EasingFunction = new QuadraticEase()
                     };
                     shape.BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
@@ -297,15 +354,14 @@ namespace GameOfLife
             {
                 if (EnableAnimationsCheckBox.IsChecked == true)
                 {
-                    Shape shape = cellShape == "Circle" ? new Ellipse() : (Shape)new Rectangle();
-
                     DoubleAnimation fadeOutAnimation = new DoubleAnimation
                     {
                         From = 1.0,
                         To = 0.0,
-                        Duration = TimeSpan.FromMilliseconds(500),
+                        Duration = TimeSpan.FromMilliseconds(300),
                         EasingFunction = new QuadraticEase()
                     };
+                    shape.BeginAnimation(UIElement.OpacityProperty, fadeOutAnimation);
 
                     fadeOutAnimation.Completed += (s, e) =>
                     {
@@ -320,17 +376,6 @@ namespace GameOfLife
                 }
             }
         }
-
-        private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (GameBoardScaleTransform != null)
-            {
-                double zoom = ZoomSlider.Value;
-                GameBoardScaleTransform.ScaleX = zoom;
-                GameBoardScaleTransform.ScaleY = zoom;
-            }
-        }
-
 
         private void CellShapeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
