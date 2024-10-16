@@ -3,8 +3,23 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Game of Life" Height="600" Width="600">
     <Grid>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <UniformGrid x:Name="GameBoard" Rows="10" Columns="10" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Wiersz dla przycisków i statystyk -->
+            <RowDefinition Height="*"/>
+            <!-- Wiersz dla planszy gry -->
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Margin="10">
+            <Button x:Name="StartStopButton" Content="Start" Width="75" Click="StartStopButton_Click"/>
+            <TextBlock Margin="10,0,0,0">Generacja:</TextBlock>
+            <TextBlock x:Name="GenerationTextBlock" Text="0" Margin="5,0,0,0"/>
+            <TextBlock Margin="10,0,0,0">Urodzeni:</TextBlock>
+            <TextBlock x:Name="BornTextBlock" Text="0" Margin="5,0,0,0"/>
+            <TextBlock Margin="10,0,0,0">Zmarli:</TextBlock>
+            <TextBlock x:Name="DiedTextBlock" Text="0" Margin="5,0,0,0"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <UniformGrid x:Name="GameBoard" />
         </ScrollViewer>
     </Grid>
 </Window>
