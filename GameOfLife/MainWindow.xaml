@@ -31,6 +31,7 @@
                 <ComboBoxItem Content="Blue"/>
                 <ComboBoxItem Content="Yellow"/>
             </ComboBox>
+            <CheckBox x:Name="EnableAnimationsCheckBox" Content="Enable Animations" IsChecked="True" Margin="10,0,0,0" VerticalAlignment="Center"/>
             <TextBlock Margin="10,0,0,0" Text="Generation:" VerticalAlignment="Center"/>
             <TextBlock x:Name="GenerationTextBlock" Text="0" Margin="5,0,0,0" VerticalAlignment="Center"/>
             <TextBlock Margin="10,0,0,0" Text="Born:" VerticalAlignment="Center"/>

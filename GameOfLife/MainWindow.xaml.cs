@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -9,7 +10,7 @@ namespace GameOfLife
 {
     public partial class MainWindow : Window
     {
-        private int[,] boardState; // Stores the state of the board (0 - dead, 1 - alive)
+        private int[,] boardState;
         private int BoardWidth;
         private int BoardHeight;
 
@@ -25,11 +26,7 @@ namespace GameOfLife
         public MainWindow()
         {
             InitializeComponent();
-
-            // Hide the main window until the board size is set
             this.Visibility = Visibility.Hidden;
-
-            // Show the board size selection window
             ShowBoardSizeWindow();
         }
 
@@ -58,41 +55,33 @@ namespace GameOfLife
 
         private void InitializeGameBoard()
         {
-            // Initialize the board state array
-            boardState = new int[BoardHeight, BoardWidth]; // [rows, columns]
-
-            // Set the number of rows and columns for the UniformGrid
+            boardState = new int[BoardHeight, BoardWidth];
             GameBoard.Rows = BoardHeight;
             GameBoard.Columns = BoardWidth;
-
-            // Clear existing elements
             GameBoard.Children.Clear();
 
-            // Create cells representing the cells of the board
             for (int i = 0; i < BoardHeight; i++)
             {
                 for (int j = 0; j < BoardWidth; j++)
                 {
-                    Border cellBorder = new Border();
-                    cellBorder.BorderBrush = Brushes.Gray;
-                    cellBorder.BorderThickness = new Thickness(0.5);
-
-                    // Set the background to white (dead cell)
-                    cellBorder.Background = Brushes.White;
-
-                    cellBorder.Tag = new Tuple<int, int>(i, j); // Store cell coordinates
-                    cellBorder.MouseLeftButtonDown += Cell_Click; // Handle click event
-
-                    GameBoard.Children.Add(cellBorder); // Add cell to UniformGrid
+                    Border cellBorder = new Border
+                    {
+                        BorderBrush = Brushes.Gray,
+                        BorderThickness = new Thickness(0.5),
+                        Background = Brushes.White,
+                        Tag = new Tuple<int, int>(i, j)
+                    };
+                    cellBorder.MouseLeftButtonDown += Cell_Click;
+                    GameBoard.Children.Add(cellBorder);
                 }
             }
 
-            // Initialize the timer
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(SpeedSlider.Value); // Use slider value for interval
+            timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(SpeedSlider.Value)
+            };
             timer.Tick += Timer_Tick;
 
-            // Reset statistics
             generation = 0;
             totalBorn = 0;
             totalDied = 0;
@@ -103,25 +92,22 @@ namespace GameOfLife
         {
             if (isRunning)
             {
-                // Stop the simulation
                 timer.Stop();
                 isRunning = false;
                 StartStopButton.Content = "Start";
-                StepButton.IsEnabled = true; // Enable the Step button
+                StepButton.IsEnabled = true;
             }
             else
             {
-                // Start the simulation
                 timer.Start();
                 isRunning = true;
                 StartStopButton.Content = "Stop";
-                StepButton.IsEnabled = false; // Disable the Step button while running
+                StepButton.IsEnabled = false;
             }
         }
 
         private void StepButton_Click(object sender, RoutedEventArgs e)
         {
-            // Perform a single step
             NextGeneration();
         }
 
@@ -135,7 +121,6 @@ namespace GameOfLife
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            // Stop the simulation if it's running
             if (isRunning)
             {
                 timer.Stop();
@@ -144,16 +129,13 @@ namespace GameOfLife
                 StepButton.IsEnabled = true;
             }
 
-            // Hide the main window
             this.Visibility = Visibility.Hidden;
 
-            // Reset statistics
             generation = 0;
             totalBorn = 0;
             totalDied = 0;
             UpdateStatistics();
 
-            // Show the board size selection window again
             BoardWidth = 0;
             BoardHeight = 0;
             ShowBoardSizeWindow();
@@ -177,25 +159,20 @@ namespace GameOfLife
                     int liveNeighbors = GetLiveNeighbors(i, j);
                     if (boardState[i, j] == 1)
                     {
-                        // Alive cell
                         if (liveNeighbors < 2 || liveNeighbors > 3)
                         {
-                            // Cell dies
                             newBoardState[i, j] = 0;
                             died++;
                         }
                         else
                         {
-                            // Cell survives
                             newBoardState[i, j] = 1;
                         }
                     }
                     else
                     {
-                        // Dead cell
                         if (liveNeighbors == 3)
                         {
-                            // Cell becomes alive
                             newBoardState[i, j] = 1;
                             born++;
                         }
@@ -207,13 +184,10 @@ namespace GameOfLife
                 }
             }
 
-            // Update the board state
             boardState = newBoardState;
 
-            // Update the UI
             UpdateUI();
 
-            // Update statistics
             generation++;
             totalBorn += born;
             totalDied += died;
@@ -231,7 +205,6 @@ namespace GameOfLife
                     if (i == row && j == col)
                         continue;
 
-                    // Check if indices are within the bounds of the board
                     if (i >= 0 && i < BoardHeight && j >= 0 && j < BoardWidth)
                     {
                         if (boardState[i, j] == 1)
@@ -251,31 +224,15 @@ namespace GameOfLife
                 for (int j = 0; j < BoardWidth; j++)
                 {
                     Border cellBorder = GameBoard.Children[index] as Border;
-                    cellBorder.Child = null; // Clear previous content
+                    cellBorder.Child = null;
 
                     if (boardState[i, j] == 1)
                     {
-                        // Live cell
-                        Shape shape;
-
-                        if (cellShape == "Circle")
-                        {
-                            shape = new Ellipse();
-                        }
-                        else // "Square"
-                        {
-                            shape = new Rectangle();
-                        }
-
-                        shape.Fill = cellColor;
-                        shape.Stretch = Stretch.Uniform;
-                        cellBorder.Background = Brushes.White; // Keep background white
-                        cellBorder.Child = shape;
+                        UpdateCellVisual(cellBorder, true);
                     }
                     else
                     {
-                        // Dead cell
-                        cellBorder.Background = Brushes.White;
+                        UpdateCellVisual(cellBorder, false);
                     }
                     index++;
                 }
@@ -291,7 +248,6 @@ namespace GameOfLife
 
         private void Cell_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Change the cell state on click only when the simulation is not running
             if (!isRunning)
             {
                 Border clickedCell = sender as Border;
@@ -299,21 +255,72 @@ namespace GameOfLife
                 int row = coordinates.Item1;
                 int col = coordinates.Item2;
 
-                // Toggle cell state
                 if (boardState[row, col] == 0)
                 {
-                    // Cell becomes alive
                     boardState[row, col] = 1;
                     UpdateCellVisual(clickedCell, true);
                 }
                 else
                 {
-                    // Cell becomes dead
                     boardState[row, col] = 0;
                     UpdateCellVisual(clickedCell, false);
                 }
             }
         }
+
+        private void UpdateCellVisual(Border cellBorder, bool isAlive)
+        {
+            cellBorder.Child = null;
+
+            if (isAlive)
+            {
+                Shape shape = cellShape == "Circle" ? new Ellipse() : (Shape)new Rectangle();
+                shape.Fill = cellColor;
+                shape.Stretch = Stretch.Uniform;
+                cellBorder.Background = Brushes.White;
+                cellBorder.Child = shape;
+
+                if (EnableAnimationsCheckBox.IsChecked == true)
+                {
+
+                    DoubleAnimation fadeInAnimation = new DoubleAnimation
+                    {
+                        From = 0.0,
+                        To = 1.0,
+                        Duration = TimeSpan.FromMilliseconds(1500),
+                        EasingFunction = new QuadraticEase()
+                    };
+                    shape.BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
+                }
+            }
+            else
+            {
+                if (EnableAnimationsCheckBox.IsChecked == true)
+                {
+                    Shape shape = cellShape == "Circle" ? new Ellipse() : (Shape)new Rectangle();
+
+                    DoubleAnimation fadeOutAnimation = new DoubleAnimation
+                    {
+                        From = 1.0,
+                        To = 0.0,
+                        Duration = TimeSpan.FromMilliseconds(500),
+                        EasingFunction = new QuadraticEase()
+                    };
+
+                    fadeOutAnimation.Completed += (s, e) =>
+                    {
+                        cellBorder.Background = Brushes.White;
+                        cellBorder.Child = null;
+                    };
+                }
+                else
+                {
+                    cellBorder.Background = Brushes.White;
+                    cellBorder.Child = null;
+                }
+            }
+        }
+
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (GameBoardScaleTransform != null)
@@ -324,33 +331,6 @@ namespace GameOfLife
             }
         }
 
-        private void UpdateCellVisual(Border cellBorder, bool isAlive)
-        {
-            cellBorder.Child = null; // Clear previous content
-
-            if (isAlive)
-            {
-                Shape shape;
-
-                if (cellShape == "Circle")
-                {
-                    shape = new Ellipse();
-                }
-                else // "Square"
-                {
-                    shape = new Rectangle();
-                }
-
-                shape.Fill = cellColor;
-                shape.Stretch = Stretch.Uniform;
-                cellBorder.Background = Brushes.White; // Keep background white
-                cellBorder.Child = shape;
-            }
-            else
-            {
-                cellBorder.Background = Brushes.White;
-            }
-        }
 
         private void CellShapeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -362,27 +342,15 @@ namespace GameOfLife
         {
             string colorName = (CellColorComboBox.SelectedItem as ComboBoxItem).Content.ToString();
 
-            switch (colorName)
+            cellColor = colorName switch
             {
-                case "Black":
-                    cellColor = Brushes.Black;
-                    break;
-                case "Red":
-                    cellColor = Brushes.Red;
-                    break;
-                case "Green":
-                    cellColor = Brushes.Green;
-                    break;
-                case "Blue":
-                    cellColor = Brushes.Blue;
-                    break;
-                case "Yellow":
-                    cellColor = Brushes.Yellow;
-                    break;
-                default:
-                    cellColor = Brushes.Black;
-                    break;
-            }
+                "Black" => Brushes.Black,
+                "Red" => Brushes.Red,
+                "Green" => Brushes.Green,
+                "Blue" => Brushes.Blue,
+                "Yellow" => Brushes.Yellow,
+                _ => Brushes.Black,
+            };
 
             UpdateUI();
         }
