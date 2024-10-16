@@ -80,7 +80,7 @@ namespace GameOfLife
 
             // Initialize the timer
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(500); // Adjust speed as needed
+            timer.Interval = TimeSpan.FromMilliseconds(SpeedSlider.Value); // Use slider value for interval
             timer.Tick += Timer_Tick;
 
             // Reset statistics
@@ -98,6 +98,7 @@ namespace GameOfLife
                 timer.Stop();
                 isRunning = false;
                 StartStopButton.Content = "Start";
+                StepButton.IsEnabled = true; // Enable the Step button
             }
             else
             {
@@ -105,6 +106,21 @@ namespace GameOfLife
                 timer.Start();
                 isRunning = true;
                 StartStopButton.Content = "Stop";
+                StepButton.IsEnabled = false; // Disable the Step button while running
+            }
+        }
+
+        private void StepButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Perform a single step
+            NextGeneration();
+        }
+
+        private void SpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (timer != null)
+            {
+                timer.Interval = TimeSpan.FromMilliseconds(SpeedSlider.Value);
             }
         }
 
@@ -116,6 +132,7 @@ namespace GameOfLife
                 timer.Stop();
                 isRunning = false;
                 StartStopButton.Content = "Start";
+                StepButton.IsEnabled = true;
             }
 
             // Hide the main window
@@ -184,6 +201,7 @@ namespace GameOfLife
             // Update the board state
             boardState = newBoardState;
 
+            // Update the UI
             UpdateUI();
 
             // Update statistics

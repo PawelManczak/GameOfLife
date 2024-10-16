@@ -11,7 +11,16 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="10">
             <Button x:Name="StartStopButton" Content="Start" Width="75" Click="StartStopButton_Click"/>
-            <Button x:Name="ResetButton" Content="Reset" Width="75" Margin="5,0,0,0" Click="ResetButton_Click"/>
+            <Button x:Name="StepButton" Content="Step" Width="75" Margin="5,0,0,0" Click="StepButton_Click"/>
+            <TextBlock Margin="10,0,0,0">Speed:</TextBlock>
+            <Slider x:Name="SpeedSlider"
+        Minimum="100"
+        Maximum="2000"
+        Value="500"
+        Width="100"
+        Margin="5,0,0,0"
+        IsDirectionReversed="True"
+        ValueChanged="SpeedSlider_ValueChanged"/>
             <TextBlock Margin="10,0,0,0">Generation:</TextBlock>
             <TextBlock x:Name="GenerationTextBlock" Text="0" Margin="5,0,0,0"/>
             <TextBlock Margin="10,0,0,0">Born:</TextBlock>
