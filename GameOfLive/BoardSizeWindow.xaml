@@ -1,0 +1,17 @@
+﻿<Window x:Class="GameOfLife.BoardSizeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Wybór rozmiaru planszy" Height="200" Width="350">
+    <Grid>
+        <Label Content="Szerokość planszy:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,20,0,0"/>
+        <TextBox x:Name="WidthTextBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="150,20,0,0" Width="100"/>
+
+        <Label Content="Wysokość planszy:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,60,0,0"/>
+        <TextBox x:Name="HeightTextBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="150,60,0,0" Width="100"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20">
+            <Button Content="Zatwierdź" Width="75" Click="ConfirmSize_Click" />
+            <Button Content="Anuluj" Width="75" Margin="20,0,0,0" Click="Cancel_Click" />
+        </StackPanel>
+    </Grid>
+</Window>
