@@ -11,16 +11,27 @@ namespace GameOfLife
         private int BoardWidth;
         private int BoardHeight;
 
-        public MainWindow(int boardWidth, int boardHeight)
+        public MainWindow()
         {
             InitializeComponent();
+        }
+
+        public MainWindow(int boardWidth, int boardHeight) : this()
+        {
             BoardWidth = boardWidth;
             BoardHeight = boardHeight;
-
             InitializeGameBoard(BoardWidth, BoardHeight);
         }
 
-        private void InitializeGameBoard(int width, int height)
+        public void setSize(int boardWidth, int boardHeight)
+        {
+
+            BoardWidth = boardWidth;
+            BoardHeight = boardHeight;
+            InitializeGameBoard(BoardWidth, BoardHeight);
+        }
+
+            private void InitializeGameBoard(int width, int height)
         {
             // Tworzymy tablicę dwuwymiarową, która będzie przechowywać stan planszy
             boardState = new int[width, height];

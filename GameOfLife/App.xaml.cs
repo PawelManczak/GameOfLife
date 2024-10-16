@@ -12,17 +12,20 @@ namespace GameOfLife
         {
             base.OnStartup(e);
 
+            MainWindow mainWindow = new MainWindow();
             BoardSizeWindow sizeWindow = new BoardSizeWindow();
             sizeWindow.ShowDialog();
 
+           
             if (sizeWindow.IsSizeConfirmed)
             {
                 int boardWidth = sizeWindow.BoardWidth;
                 int boardHeight = sizeWindow.BoardHeight;
 
-                Console.WriteLine(boardHeight);
-                MainWindow mainWindow = new MainWindow(boardWidth, boardHeight);
-                mainWindow.Show();
+               
+                mainWindow.setSize(boardWidth, boardHeight);
+                mainWindow.ShowDialog();
+               
             }
             else
             {
