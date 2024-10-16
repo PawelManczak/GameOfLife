@@ -25,6 +25,8 @@ namespace GameOfLife
 
         private Random random = new Random();
 
+        private GameStateManager gameStateManager = new GameStateManager(); // Inicjalizacja klasy do zarządzania stanem gry
+
         public MainWindow()
         {
             InitializeComponent();
@@ -399,5 +401,62 @@ namespace GameOfLife
 
             UpdateUI();
         }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            gameStateManager.SaveGameState(boardState, BoardWidth, BoardHeight);
+        }
+
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            var (loadedBoardState, width, height) = gameStateManager.LoadGameState();
+
+            if (loadedBoardState != null)
+            {
+                if (isRunning)
+                {
+                    timer.Stop();
+                    isRunning = false;
+                    StartStopButton.Content = "Start";
+                    StepButton.IsEnabled = true;
+                }
+
+                BoardWidth = width;
+                BoardHeight = height;
+
+                boardState = loadedBoardState;
+
+                GameBoard.Children.Clear();
+
+                GameBoard.Rows = BoardHeight;
+                GameBoard.Columns = BoardWidth;
+
+                for (int i = 0; i < BoardHeight; i++)
+                {
+                    for (int j = 0; j < BoardWidth; j++)
+                    {
+                        Border cellBorder = new Border
+                        {
+                            BorderBrush = Brushes.Gray,
+                            BorderThickness = new Thickness(0.5),
+                            Background = Brushes.White,
+                            Tag = new Tuple<int, int>(i, j)
+                        };
+                        cellBorder.MouseLeftButtonDown += Cell_Click;
+                        GameBoard.Children.Add(cellBorder);
+                    }
+                }
+
+                UpdateUI();
+
+                MessageBox.Show("Game state loaded successfully.", "Load", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load game state.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
     }
 }
