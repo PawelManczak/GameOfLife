@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace GameOfLife
@@ -17,6 +18,9 @@ namespace GameOfLife
         private int generation = 0;
         private int totalBorn = 0;
         private int totalDied = 0;
+
+        private string cellShape = "Square";
+        private Brush cellColor = Brushes.Black;
 
         public MainWindow()
         {
@@ -64,17 +68,22 @@ namespace GameOfLife
             // Clear existing elements
             GameBoard.Children.Clear();
 
-            // Create buttons representing the cells of the board
+            // Create cells representing the cells of the board
             for (int i = 0; i < BoardHeight; i++)
             {
                 for (int j = 0; j < BoardWidth; j++)
                 {
-                    Button cell = new Button();
-                    cell.Background = Brushes.White; // Dead cell
-                    cell.Tag = new Tuple<int, int>(i, j); // Store cell coordinates
-                    cell.Click += Cell_Click; // Handle click event
+                    Border cellBorder = new Border();
+                    cellBorder.BorderBrush = Brushes.Gray;
+                    cellBorder.BorderThickness = new Thickness(0.5);
 
-                    GameBoard.Children.Add(cell); // Add cell to UniformGrid
+                    // Set the background to white (dead cell)
+                    cellBorder.Background = Brushes.White;
+
+                    cellBorder.Tag = new Tuple<int, int>(i, j); // Store cell coordinates
+                    cellBorder.MouseLeftButtonDown += Cell_Click; // Handle click event
+
+                    GameBoard.Children.Add(cellBorder); // Add cell to UniformGrid
                 }
             }
 
@@ -241,14 +250,32 @@ namespace GameOfLife
             {
                 for (int j = 0; j < BoardWidth; j++)
                 {
-                    Button cell = GameBoard.Children[index] as Button;
+                    Border cellBorder = GameBoard.Children[index] as Border;
+                    cellBorder.Child = null; // Clear previous content
+
                     if (boardState[i, j] == 1)
                     {
-                        cell.Background = Brushes.Black;
+                        // Live cell
+                        Shape shape;
+
+                        if (cellShape == "Circle")
+                        {
+                            shape = new Ellipse();
+                        }
+                        else // "Square"
+                        {
+                            shape = new Rectangle();
+                        }
+
+                        shape.Fill = cellColor;
+                        shape.Stretch = Stretch.Uniform;
+                        cellBorder.Background = Brushes.White; // Keep background white
+                        cellBorder.Child = shape;
                     }
                     else
                     {
-                        cell.Background = Brushes.White;
+                        // Dead cell
+                        cellBorder.Background = Brushes.White;
                     }
                     index++;
                 }
@@ -262,12 +289,12 @@ namespace GameOfLife
             DiedTextBlock.Text = totalDied.ToString();
         }
 
-        private void Cell_Click(object sender, RoutedEventArgs e)
+        private void Cell_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             // Change the cell state on click only when the simulation is not running
             if (!isRunning)
             {
-                Button clickedCell = sender as Button;
+                Border clickedCell = sender as Border;
                 var coordinates = (Tuple<int, int>)clickedCell.Tag;
                 int row = coordinates.Item1;
                 int col = coordinates.Item2;
@@ -277,15 +304,78 @@ namespace GameOfLife
                 {
                     // Cell becomes alive
                     boardState[row, col] = 1;
-                    clickedCell.Background = Brushes.Black;
+                    UpdateCellVisual(clickedCell, true);
                 }
                 else
                 {
                     // Cell becomes dead
                     boardState[row, col] = 0;
-                    clickedCell.Background = Brushes.White;
+                    UpdateCellVisual(clickedCell, false);
                 }
             }
+        }
+
+        private void UpdateCellVisual(Border cellBorder, bool isAlive)
+        {
+            cellBorder.Child = null; // Clear previous content
+
+            if (isAlive)
+            {
+                Shape shape;
+
+                if (cellShape == "Circle")
+                {
+                    shape = new Ellipse();
+                }
+                else // "Square"
+                {
+                    shape = new Rectangle();
+                }
+
+                shape.Fill = cellColor;
+                shape.Stretch = Stretch.Uniform;
+                cellBorder.Background = Brushes.White; // Keep background white
+                cellBorder.Child = shape;
+            }
+            else
+            {
+                cellBorder.Background = Brushes.White;
+            }
+        }
+
+        private void CellShapeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            cellShape = (CellShapeComboBox.SelectedItem as ComboBoxItem).Content.ToString();
+            UpdateUI();
+        }
+
+        private void CellColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string colorName = (CellColorComboBox.SelectedItem as ComboBoxItem).Content.ToString();
+
+            switch (colorName)
+            {
+                case "Black":
+                    cellColor = Brushes.Black;
+                    break;
+                case "Red":
+                    cellColor = Brushes.Red;
+                    break;
+                case "Green":
+                    cellColor = Brushes.Green;
+                    break;
+                case "Blue":
+                    cellColor = Brushes.Blue;
+                    break;
+                case "Yellow":
+                    cellColor = Brushes.Yellow;
+                    break;
+                default:
+                    cellColor = Brushes.Black;
+                    break;
+            }
+
+            UpdateUI();
         }
     }
 }
