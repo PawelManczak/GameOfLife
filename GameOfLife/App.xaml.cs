@@ -3,16 +3,15 @@ using System.Configuration;
 using System.Data;
 using System.Windows;
 
-namespace GameOfLive
+
+namespace GameOfLife
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
-
         protected override void OnStartup(StartupEventArgs e)
         {
+            base.OnStartup(e);
+
             BoardSizeWindow sizeWindow = new BoardSizeWindow();
             sizeWindow.ShowDialog();
 
@@ -21,6 +20,7 @@ namespace GameOfLive
                 int boardWidth = sizeWindow.BoardWidth;
                 int boardHeight = sizeWindow.BoardHeight;
 
+                Console.WriteLine(boardHeight);
                 MainWindow mainWindow = new MainWindow(boardWidth, boardHeight);
                 mainWindow.Show();
             }
@@ -29,8 +29,5 @@ namespace GameOfLive
                 this.Shutdown();
             }
         }
-
     }
-
-
 }
