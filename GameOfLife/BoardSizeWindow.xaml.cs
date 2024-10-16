@@ -1,12 +1,15 @@
-﻿
+﻿using System;
 using System.Windows;
+
 namespace GameOfLife
 {
     public partial class BoardSizeWindow : Window
     {
-        public int BoardWidth { get; private set; }
-        public int BoardHeight { get; private set; }
-        public bool IsSizeConfirmed { get; private set; } = false;
+        // Delegate definition
+        public delegate void BoardSizeConfirmedHandler(int width, int height);
+
+        // Event definition
+        public event BoardSizeConfirmedHandler BoardSizeConfirmed;
 
         public BoardSizeWindow()
         {
@@ -20,21 +23,18 @@ namespace GameOfLife
 
             if (isWidthValid && isHeightValid && width > 0 && height > 0)
             {
-                BoardWidth = width;
-                BoardHeight = height;
-
-                IsSizeConfirmed = true;
+                // Raise the event
+                BoardSizeConfirmed?.Invoke(width, height);
                 this.Close();
             }
             else
             {
-                MessageBox.Show("Proszę wprowadzić prawidłowe wartości liczbowe dla szerokości i wysokości planszy.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Please enter valid numeric values for board width and height.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            IsSizeConfirmed = false;
             this.Close();
         }
     }

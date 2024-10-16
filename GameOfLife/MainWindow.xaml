@@ -5,15 +5,18 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Row for buttons and statistics -->
             <RowDefinition Height="*"/>
+            <!-- Row for the game board -->
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="10">
             <Button x:Name="StartStopButton" Content="Start" Width="75" Click="StartStopButton_Click"/>
-            <TextBlock Margin="10,0,0,0">Generacja:</TextBlock>
+            <Button x:Name="ResetButton" Content="Reset" Width="75" Margin="5,0,0,0" Click="ResetButton_Click"/>
+            <TextBlock Margin="10,0,0,0">Generation:</TextBlock>
             <TextBlock x:Name="GenerationTextBlock" Text="0" Margin="5,0,0,0"/>
-            <TextBlock Margin="10,0,0,0">Urodzeni:</TextBlock>
+            <TextBlock Margin="10,0,0,0">Born:</TextBlock>
             <TextBlock x:Name="BornTextBlock" Text="0" Margin="5,0,0,0"/>
-            <TextBlock Margin="10,0,0,0">Zmarli:</TextBlock>
+            <TextBlock Margin="10,0,0,0">Died:</TextBlock>
             <TextBlock x:Name="DiedTextBlock" Text="0" Margin="5,0,0,0"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
