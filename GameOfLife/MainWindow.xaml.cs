@@ -1,34 +1,27 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace GameOfLife
 {
     public partial class MainWindow : Window
     {
-        private int[,] boardState;
-        private int BoardWidth;
-        private int BoardHeight;
+        private GameOfLifeEngine gameEngine;
+        private GameBoardManager boardManager;
+        private GameStateManager gameStateManager = new GameStateManager();
+        private ImageSaver imageSaver = new ImageSaver();
 
-        private bool isRunning = false;
         private DispatcherTimer timer;
+        private bool isRunning = false;
         private int generation = 0;
         private int totalBorn = 0;
         private int totalDied = 0;
 
         private string cellShape = "Square";
         private Brush cellColor = Brushes.Black;
-
-        private Random random = new Random();
-
-        private GameStateManager gameStateManager = new GameStateManager();
-        private ImageSaver imageSaver = new ImageSaver();
 
         public MainWindow()
         {
@@ -43,7 +36,7 @@ namespace GameOfLife
             sizeWindow.BoardSizeConfirmed += SizeWindow_BoardSizeConfirmed;
             sizeWindow.ShowDialog();
 
-            if (BoardWidth == 0 || BoardHeight == 0)
+            if (gameEngine == null)
             {
                 this.Close();
             }
@@ -55,33 +48,9 @@ namespace GameOfLife
 
         private void SizeWindow_BoardSizeConfirmed(int width, int height)
         {
-            BoardWidth = width;
-            BoardHeight = height;
-            InitializeGameBoard();
-        }
-
-        private void InitializeGameBoard()
-        {
-            boardState = new int[BoardHeight, BoardWidth];
-            GameBoard.Rows = BoardHeight;
-            GameBoard.Columns = BoardWidth;
-            GameBoard.Children.Clear();
-
-            for (int i = 0; i < BoardHeight; i++)
-            {
-                for (int j = 0; j < BoardWidth; j++)
-                {
-                    Border cellBorder = new Border
-                    {
-                        BorderBrush = Brushes.Gray,
-                        BorderThickness = new Thickness(0.5),
-                        Background = Brushes.White,
-                        Tag = new Tuple<int, int>(i, j)
-                    };
-                    cellBorder.MouseLeftButtonDown += Cell_Click;
-                    GameBoard.Children.Add(cellBorder);
-                }
-            }
+            gameEngine = new GameOfLifeEngine(width, height);
+            boardManager = new GameBoardManager(GameBoard, gameEngine);
+            boardManager.InitializeBoard(cellShape, cellColor, EnableAnimationsCheckBox.IsChecked == true);
 
             timer = new DispatcherTimer
             {
@@ -143,8 +112,6 @@ namespace GameOfLife
             totalDied = 0;
             UpdateStatistics();
 
-            BoardWidth = 0;
-            BoardHeight = 0;
             ShowBoardSizeWindow();
         }
 
@@ -158,26 +125,14 @@ namespace GameOfLife
                 StepButton.IsEnabled = true;
             }
 
-            for (int i = 0; i < BoardHeight; i++)
-            {
-                for (int j = 0; j < BoardWidth; j++)
-                {
-                    boardState[i, j] = 0;
-                }
-            }
-            UpdateUI();
+            gameEngine.ClearBoard();
+            boardManager.UpdateBoard();
         }
 
         private void RandomizeButton_Click(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < BoardHeight; i++)
-            {
-                for (int j = 0; j < BoardWidth; j++)
-                {
-                    boardState[i, j] = random.Next(2);
-                }
-            }
-            UpdateUI();
+            gameEngine.RandomizeBoard();
+            boardManager.UpdateBoard();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -187,45 +142,8 @@ namespace GameOfLife
 
         private void NextGeneration()
         {
-            int[,] newBoardState = new int[BoardHeight, BoardWidth];
-            int born = 0;
-            int died = 0;
-
-            for (int i = 0; i < BoardHeight; i++)
-            {
-                for (int j = 0; j < BoardWidth; j++)
-                {
-                    int liveNeighbors = GetLiveNeighbors(i, j);
-                    if (boardState[i, j] == 1)
-                    {
-                        if (liveNeighbors < 2 || liveNeighbors > 3)
-                        {
-                            newBoardState[i, j] = 0;
-                            died++;
-                        }
-                        else
-                        {
-                            newBoardState[i, j] = 1;
-                        }
-                    }
-                    else
-                    {
-                        if (liveNeighbors == 3)
-                        {
-                            newBoardState[i, j] = 1;
-                            born++;
-                        }
-                        else
-                        {
-                            newBoardState[i, j] = 0;
-                        }
-                    }
-                }
-            }
-
-            boardState = newBoardState;
-
-            UpdateUI();
+            gameEngine.NextGeneration(out int born, out int died);
+            boardManager.UpdateBoard();
 
             generation++;
             totalBorn += born;
@@ -233,78 +151,11 @@ namespace GameOfLife
             UpdateStatistics();
         }
 
-        private int GetLiveNeighbors(int row, int col)
-        {
-            int liveNeighbors = 0;
-
-            for (int i = row - 1; i <= row + 1; i++)
-            {
-                for (int j = col - 1; j <= col + 1; j++)
-                {
-                    if (i == row && j == col)
-                        continue;
-
-                    if (i >= 0 && i < BoardHeight && j >= 0 && j < BoardWidth)
-                    {
-                        if (boardState[i, j] == 1)
-                            liveNeighbors++;
-                    }
-                }
-            }
-
-            return liveNeighbors;
-        }
-
-        private void UpdateUI()
-        {
-            int index = 0;
-            for (int i = 0; i < BoardHeight; i++)
-            {
-                for (int j = 0; j < BoardWidth; j++)
-                {
-                    Border cellBorder = GameBoard.Children[index] as Border;
-                    cellBorder.Child = null;
-
-                    if (boardState[i, j] == 1)
-                    {
-                        UpdateCellVisual(cellBorder, true);
-                    }
-                    else
-                    {
-                        UpdateCellVisual(cellBorder, false);
-                    }
-                    index++;
-                }
-            }
-        }
-
         private void UpdateStatistics()
         {
             GenerationTextBlock.Text = generation.ToString();
             BornTextBlock.Text = totalBorn.ToString();
             DiedTextBlock.Text = totalDied.ToString();
-        }
-
-        private void Cell_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (!isRunning)
-            {
-                Border clickedCell = sender as Border;
-                var coordinates = (Tuple<int, int>)clickedCell.Tag;
-                int row = coordinates.Item1;
-                int col = coordinates.Item2;
-
-                if (boardState[row, col] == 0)
-                {
-                    boardState[row, col] = 1;
-                    UpdateCellVisual(clickedCell, true);
-                }
-                else
-                {
-                    boardState[row, col] = 0;
-                    UpdateCellVisual(clickedCell, false);
-                }
-            }
         }
 
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -332,91 +183,54 @@ namespace GameOfLife
             }
         }
 
-        private void UpdateCellVisual(Border cellBorder, bool isAlive)
-        {
-            cellBorder.Child = null;
-            Shape shape = cellShape == "Circle" ? new Ellipse() : (Shape)new Rectangle();
-            if (isAlive)
-            {
-                shape.Fill = cellColor;
-                shape.Stretch = Stretch.Uniform;
-                cellBorder.Background = Brushes.White;
-                cellBorder.Child = shape;
-
-                if (EnableAnimationsCheckBox.IsChecked == true)
-                {
-                    DoubleAnimation fadeInAnimation = new DoubleAnimation
-                    {
-                        From = 0.0,
-                        To = 1.0,
-                        Duration = TimeSpan.FromMilliseconds(300),
-                        EasingFunction = new QuadraticEase()
-                    };
-                    shape.BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
-                }
-            }
-            else
-            {
-                if (EnableAnimationsCheckBox.IsChecked == true)
-                {
-                    DoubleAnimation fadeOutAnimation = new DoubleAnimation
-                    {
-                        From = 1.0,
-                        To = 0.0,
-                        Duration = TimeSpan.FromMilliseconds(300),
-                        EasingFunction = new QuadraticEase()
-                    };
-                    shape.BeginAnimation(UIElement.OpacityProperty, fadeOutAnimation);
-
-                    fadeOutAnimation.Completed += (s, e) =>
-                    {
-                        cellBorder.Background = Brushes.White;
-                        cellBorder.Child = null;
-                    };
-                }
-                else
-                {
-                    cellBorder.Background = Brushes.White;
-                    cellBorder.Child = null;
-                }
-            }
-        }
-
         private void CellShapeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            cellShape = (CellShapeComboBox.SelectedItem as ComboBoxItem).Content.ToString();
-            UpdateUI();
+            if (CellShapeComboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                cellShape = selectedItem.Content.ToString();
+
+                if (boardManager != null)
+                {
+                    boardManager.SetCellShape(cellShape);
+                }
+            }
         }
 
         private void CellColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string colorName = (CellColorComboBox.SelectedItem as ComboBoxItem).Content.ToString();
-
-            cellColor = colorName switch
+            if (CellColorComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
-                "Black" => Brushes.Black,
-                "Red" => Brushes.Red,
-                "Green" => Brushes.Green,
-                "Blue" => Brushes.Blue,
-                "Yellow" => Brushes.Yellow,
-                _ => Brushes.Black,
-            };
+                string colorName = selectedItem.Content.ToString();
 
-            UpdateUI();
+                cellColor = colorName switch
+                {
+                    "Black" => Brushes.Black,
+                    "Red" => Brushes.Red,
+                    "Green" => Brushes.Green,
+                    "Blue" => Brushes.Blue,
+                    "Yellow" => Brushes.Yellow,
+                    _ => Brushes.Black,
+                };
+
+                if (boardManager != null)
+                {
+                    boardManager.SetCellColor(cellColor);
+                }
+            }
         }
 
-        private void SaveImageButton_Click(object sender, RoutedEventArgs e)
+        private void EnableAnimationsCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            SaveBoardAsImage();
+            if (boardManager != null)
+            {
+                boardManager.SetAnimationsEnabled(EnableAnimationsCheckBox.IsChecked == true);
+            }
         }
 
-        private void SaveBoardAsImage()
-        {
-            imageSaver.SaveAsImage(GameBoard);
-        }
+
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            gameStateManager.SaveGameState(boardState, BoardWidth, BoardHeight);
+            gameStateManager.SaveGameState(gameEngine.BoardState, gameEngine.Width, gameEngine.Height);
         }
 
         private void LoadButton_Click(object sender, RoutedEventArgs e)
@@ -433,33 +247,14 @@ namespace GameOfLife
                     StepButton.IsEnabled = true;
                 }
 
-                BoardWidth = width;
-                BoardHeight = height;
+                gameEngine = new GameOfLifeEngine(width, height);
 
-                boardState = loadedBoardState;
+                gameEngine.LoadBoardState(loadedBoardState);
 
-                GameBoard.Children.Clear();
+                boardManager = new GameBoardManager(GameBoard, gameEngine);
+                boardManager.InitializeBoard(cellShape, cellColor, EnableAnimationsCheckBox.IsChecked == true);
 
-                GameBoard.Rows = BoardHeight;
-                GameBoard.Columns = BoardWidth;
-
-                for (int i = 0; i < BoardHeight; i++)
-                {
-                    for (int j = 0; j < BoardWidth; j++)
-                    {
-                        Border cellBorder = new Border
-                        {
-                            BorderBrush = Brushes.Gray,
-                            BorderThickness = new Thickness(0.5),
-                            Background = Brushes.White,
-                            Tag = new Tuple<int, int>(i, j)
-                        };
-                        cellBorder.MouseLeftButtonDown += Cell_Click;
-                        GameBoard.Children.Add(cellBorder);
-                    }
-                }
-
-                UpdateUI();
+                boardManager.UpdateBoard();
 
                 MessageBox.Show("Game state loaded successfully.", "Load", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -469,6 +264,9 @@ namespace GameOfLife
             }
         }
 
-
+        private void SaveImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            imageSaver.SaveAsImage(GameBoard);
+        }
     }
 }
