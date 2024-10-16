@@ -5,9 +5,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Wiersz dla przycisków i statystyk -->
             <RowDefinition Height="*"/>
-            <!-- Wiersz dla planszy gry -->
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="10">
             <Button x:Name="StartStopButton" Content="Start" Width="75" Click="StartStopButton_Click"/>

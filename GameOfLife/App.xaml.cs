@@ -16,16 +16,13 @@ namespace GameOfLife
             BoardSizeWindow sizeWindow = new BoardSizeWindow();
             sizeWindow.ShowDialog();
 
-           
             if (sizeWindow.IsSizeConfirmed)
             {
                 int boardWidth = sizeWindow.BoardWidth;
                 int boardHeight = sizeWindow.BoardHeight;
 
-               
                 mainWindow.setSize(boardWidth, boardHeight);
                 mainWindow.ShowDialog();
-               
             }
             else
             {
@@ -34,3 +31,4 @@ namespace GameOfLife
         }
     }
 }
+
