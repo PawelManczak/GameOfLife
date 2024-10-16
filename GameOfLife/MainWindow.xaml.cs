@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -402,6 +404,39 @@ namespace GameOfLife
             UpdateUI();
         }
 
+        private void SaveImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBoardAsImage();
+        }
+
+        private void SaveBoardAsImage()
+        {
+            // Wybieramy miejsce do zapisu pliku za pomocą dialogu
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "PNG Image (*.png)|*.png",
+                Title = "Save Board Image"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                // Renderujemy planszę do bitmapy
+                RenderTargetBitmap renderBitmap = new RenderTargetBitmap((int)GameBoard.ActualWidth, (int)GameBoard.ActualHeight, 96d, 96d, PixelFormats.Pbgra32);
+                renderBitmap.Render(GameBoard);
+
+                // Konwertujemy bitmapę na format PNG
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+
+                // Zapisujemy obraz do pliku
+                using (var fileStream = new System.IO.FileStream(saveFileDialog.FileName, System.IO.FileMode.Create))
+                {
+                    encoder.Save(fileStream);
+                }
+
+                MessageBox.Show("Board image saved successfully.", "Save Image", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             gameStateManager.SaveGameState(boardState, BoardWidth, BoardHeight);
