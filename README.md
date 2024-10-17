@@ -1,7 +1,11 @@
 # Game of Life
 
 A C# implementation of Conway's Game of Life using WPF (Windows Presentation Foundation). The simulation follows the basic rules of cell birth, survival, and death on a grid of customizable size.
+
+
 ![Screen Recording 2024-10-17 at 18 19 54](https://github.com/user-attachments/assets/558ed89d-5e6f-4cc3-8af4-ac2c9b674749)
+
+
 ## Features
 
 
